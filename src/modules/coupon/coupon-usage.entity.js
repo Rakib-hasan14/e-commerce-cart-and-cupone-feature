@@ -1,33 +1,33 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('src/utils/database/database-setup');
 
-const Cart = sequelize.define('Cart', {
+const CouponUsage = sequelize.define('CouponUsage', {
     id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
     },
+    coupon_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+    },
     user_id: {
         type: DataTypes.UUID,
         allowNull: false,
     },
-    status: {
-        type: DataTypes.ENUM('active', 'completed', 'abandoned'),
-        defaultValue: 'active',
-    },
-    coupon_id: {
+    order_id: {
         type: DataTypes.UUID,
-        allowNull: true,
+        allowNull: true, // Nullable if tracking before order completion
     },
 }, {
     timestamps: true,
     underscored: true,
-    tableName: 'carts',
+    tableName: 'coupon_usages',
     indexes: [
         {
-            fields: ['user_id', 'status'],
+            fields: ['coupon_id', 'user_id'],
         },
     ],
 });
 
-module.exports = Cart;
+module.exports = CouponUsage;

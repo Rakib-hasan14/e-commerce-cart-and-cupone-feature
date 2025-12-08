@@ -18,8 +18,13 @@ if (config.env === 'development') {
     app.use(morgan('dev'));
 }
 
+
+app.get('/', (req, res) => {
+    res.send('welcome to e-commerce backend');
+});
+
 // Routes
-app.use('/api/v1', routes);
+app.use('/', routes);
 
 // 404 Handler
 app.all('*', (req, res, next) => {

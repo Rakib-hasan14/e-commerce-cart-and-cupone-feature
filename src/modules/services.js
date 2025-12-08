@@ -1,4 +1,4 @@
-const cartService = require('./cart/cart.service');
+const cartService = require('src/modules/cart/cart.service');
 
 module.exports = {
     cartService,
