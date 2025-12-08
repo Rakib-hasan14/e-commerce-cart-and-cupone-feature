@@ -1,172 +1,180 @@
-# E-commerce Cart and Coupon Service
+# Testing Instructions for Cart and Coupon Feature
 
-A clean, scalable, and modular Node.js backend for an e-commerce cart and coupon system.
+This document provides instructions on how to install, run, and manually test the Cart and Coupon features.
 
-## Features
-- **Cart Operations**: Add, update, remove items with real-time total calculation.
-- **Coupon System**: 
-    - Manual coupons (Fixed/Percentage).
-    - Auto-applied coupons based on rules.
-    - Complex validation (min amount, min items, product restrictions, usage limits).
-- **Architecture**: Modular, Vertical Slice architecture with centralized entity management.
-- **Database**: PostgreSQL with Sequelize ORM (Snake case columns).
+## 1. Installation
 
-## Setup
-
-1.  **Install Dependencies**
+1.  Open your terminal in the project directory.
+2.  Install the dependencies:
     ```bash
     npm install
     ```
 
-2.  **Environment Configuration**
-    - Rename `.env.example` to `.env`.
-    - Update `DATABASE_URL` with your PostgreSQL connection string.
+## 2. Configuration
+
+1.  Create a `.env` file in the root directory (if it doesn't exist).
+2.  Add your Database URL (get this from your email as per instructions) and Port:
     ```env
-    DATABASE_URL=postgres://user:password@host:5432/dbname
+    DATABASE_URL=postgres://user:password@host:port/database_name
+    PORT=3000
+    NODE_ENV=development
     ```
 
-3.  **Database Migration**
-    - Run the sync script to create tables (WARNING: Drops existing tables).
-    ```bash
-    npm run db:sync
-    ```
+## 3. Running the Server
 
-4.  **Start Server**
-    ```bash
-    npm run dev
-    ```
+Start the server using the command:
+```bash
+npm start
+```
+The server should start on `http://localhost:3000` (or your configured PORT).
 
-## API Documentation (For Postman Testing)
+---
 
-### 1. Products
+## 4. Requirement Test Case Instructions (Manual Testing)
 
-**Create Product**
-- **URL**: `POST /api/v1/products`
-- **Body**:
-  ```json
-  {
-    "name": "Gaming Laptop",
-    "price": 1200.00,
-    "stock": 10
-  }
-  ```
+You can verify the requirements using a tool like **Postman**, **Insomnia**, or **cURL**.
 
-**Get All Products**
-- **URL**: `GET /api/v1/products`
+**Base URL:** `http://localhost:3000`
+**Test User ID:** `123e4567-e89b-12d3-a456-426614174000` (You can use any UUID)
 
-### 2. Coupons
+### A. Setup Data (If not already seeded)
 
-**Create General Coupon**
-- **URL**: `POST /api/v1/coupons`
-- **Body**:
-  ```json
-  {
-    "code": "SAVE10",
-    "type": "general",
-    "discount_type": "percentage",
-    "discount_value": 10,
-    "start_date": "2024-01-01",
-    "expiry_date": "2025-12-31",
-    "usage_limit": 100,
-    "user_usage_limit": 1
-  }
-  ```
-
-**Create Auto-Applied Coupon (e.g., $50 off if total > $500)**
-- **URL**: `POST /api/v1/coupons`
-- **Body**:
-  ```json
-  {
-    "code": "AUTO50",
-    "type": "auto_applied",
-    "discount_type": "fixed",
-    "discount_value": 50,
-    "start_date": "2024-01-01",
-    "expiry_date": "2025-12-31",
-    "rules": [
-      {
-        "rule_type": "min_cart_amount",
-        "value": { "amount": 500 }
-      }
-    ]
-  }
-  ```
-
-### 3. Cart
-
-**Add Item to Cart**
-- **URL**: `POST /api/v1/cart/items`
-- **Body**:
-  ```json
-  {
-    "userId": "123e4567-e89b-12d3-a456-426614174000",
-    "productId": "PRODUCT_UUID_FROM_STEP_1",
-    "quantity": 1
-  }
-  ```
-
-**Get Cart**
-- **URL**: `GET /api/v1/cart?userId=123e4567-e89b-12d3-a456-426614174000`
-- **Response**:
-  ```json
-  {
-    "status": "success",
-    "data": {
-      "cartId": "...",
-      "items": [...],
-      "coupon": null,
-      "summary": {
-        "subtotal": 1200,
-        "discount": 0,
-        "total": 1200
-      }
+**1. Create a Product**
+*   **Endpoint:** `POST /products`
+*   **Body:**
+    ```json
+    {
+      "name": "Test Product",
+      "price": 100,
+      "stock": 50
     }
-  }
-  ```
+    ```
+*   **Response:** Note the `id` of the created product (e.g., `product_id_1`).
 
-**Apply Coupon**
-- **URL**: `POST /api/v1/cart/coupon`
-- **Body**:
-  ```json
-  {
-    "userId": "123e4567-e89b-12d3-a456-426614174000",
-    "code": "SAVE10"
-  }
-  ```
+**2. Create a General Coupon (Manual)**
+*   **Endpoint:** `POST /coupons`
+*   **Body:**
+    ```json
+    {
+      "code": "SAVE10",
+      "type": "general",
+      "discount_type": "fixed",
+      "discount_value": 10,
+      "start_date": "2024-01-01",
+      "expiry_date": "2025-12-31",
+      "usage_limit": 100
+    }
+    ```
 
-**Remove Coupon**
-- **URL**: `DELETE /api/v1/cart/coupon`
-- **Body**:
-  ```json
-  {
-    "userId": "123e4567-e89b-12d3-a456-426614174000"
-  }
-  ```
+**3. Create an Auto-Applied Coupon**
+*   **Endpoint:** `POST /coupons`
+*   **Body:**
+    ```json
+    {
+      "code": "AUTO5",
+      "type": "auto_applied",
+      "discount_type": "percentage",
+      "discount_value": 5,
+      "start_date": "2024-01-01",
+      "expiry_date": "2025-12-31",
+      "rules": [
+        {
+          "rule_type": "min_cart_amount",
+          "value": { "amount": 200 }
+        }
+      ]
+    }
+    ```
 
-**Update Item Quantity**
-- **URL**: `PUT /api/v1/cart/items/ITEM_UUID`
-- **Body**:
-  ```json
-  {
-    "userId": "123e4567-e89b-12d3-a456-426614174000",
-    "quantity": 2
-  }
-  ```
+---
 
-**Remove Item**
-- **URL**: `DELETE /api/v1/cart/items/ITEM_UUID`
-- **Body**:
-  ```json
-  {
-    "userId": "123e4567-e89b-12d3-a456-426614174000"
-  }
-  ```
+### B. Cart Requirements Testing
 
-## Testing Flow
-1. Create a Product. Copy its ID.
-2. Add item to cart using a random UUID for `userId`.
-3. Check `GET /cart`.
-4. Create a Coupon (`SAVE10`).
-5. Apply Coupon. Check `GET /cart` to see discount.
-6. Create an Auto-Applied Coupon (`AUTO50` for > $500).
-7. Add more items to reach $500. Check `GET /cart` to see if `AUTO50` is applied (if no manual coupon is set).
+**1. Add Item to Cart**
+*   **Requirement:** "A customer can add items to the cart."
+*   **Endpoint:** `POST /cart/items`
+*   **Body:**
+    ```json
+    {
+      "userId": "123e4567-e89b-12d3-a456-426614174000",
+      "productId": "<product_id_1>",
+      "quantity": 1
+    }
+    ```
+*   **Verify:** Response should show the item added and the subtotal (e.g., 100).
+
+**2. Update Item in Cart**
+*   **Requirement:** "A customer can update... items from the cart."
+*   **Endpoint:** `PUT /cart/items/<cart_item_id>` (Get `cart_item_id` from the previous response `items -> id`)
+*   **Body:**
+    ```json
+    {
+      "userId": "123e4567-e89b-12d3-a456-426614174000",
+      "quantity": 2
+    }
+    ```
+*   **Verify:** Quantity updates to 2, subtotal updates (e.g., 200).
+
+**3. Remove Item from Cart**
+*   **Requirement:** "A customer can... remove items from the cart."
+*   **Endpoint:** `DELETE /cart/items/<cart_item_id>`
+*   **Body:**
+    ```json
+    {
+      "userId": "123e4567-e89b-12d3-a456-426614174000"
+    }
+    ```
+*   **Verify:** Item is removed from the list.
+
+---
+
+### C. Coupon Requirements Testing
+
+**1. Apply Manual Coupon**
+*   **Requirement:** "The customer manually enters the coupon code. If valid, the discount is applied."
+*   **Endpoint:** `POST /cart/coupon`
+*   **Body:**
+    ```json
+    {
+      "userId": "123e4567-e89b-12d3-a456-426614174000",
+      "code": "SAVE10"
+    }
+    ```
+*   **Verify:**
+    *   `coupon` object is present in response.
+    *   `summary.discount` shows `10`.
+    *   `summary.total` shows `subtotal - 10`.
+
+**2. Auto-Applied Coupon**
+*   **Requirement:** "This coupon should be applied automatically."
+*   **Test:**
+    *   Remove the manual coupon first: `DELETE /cart/coupon` (Body: `{ "userId": "..." }`).
+    *   Ensure your cart total meets the auto-coupon criteria (e.g., > 200).
+    *   Call `GET /cart?userId=123e4567-e89b-12d3-a456-426614174000`.
+*   **Verify:**
+    *   The response should automatically include the `AUTO5` coupon (if criteria met).
+    *   `summary.discount` should reflect 5% of subtotal.
+
+**3. Coupon Rules Validation**
+*   **Requirement:** "Minimum total price required."
+*   **Test:**
+    *   Create a coupon with high min price.
+    *   Try to apply it to a small cart.
+*   **Verify:** API should return `400 Bad Request` with message "Minimum cart amount... required".
+
+---
+
+### D. Checkout
+
+**1. Checkout**
+*   **Endpoint:** `POST /cart/checkout`
+*   **Body:**
+    ```json
+    {
+      "userId": "123e4567-e89b-12d3-a456-426614174000"
+    }
+    ```
+*   **Verify:**
+    *   Response: "Checkout successful".
+    *   Cart status becomes `completed`.
+    *   Coupon usage count increments (if checked in DB).
